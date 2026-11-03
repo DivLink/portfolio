@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { HashRouter, Routes, Route, Link, NavLink, Navigate, useLocation, useParams } from 'react-router-dom'
-import { profile, categories, asset } from './data'
+import { profile, categories, packages, partners, about, asset } from './data'
 
 function Bulb({ on }) {
   return (
@@ -69,12 +69,105 @@ function Contact({ onClose }) {
   )
 }
 
+function Notice({ name, onClose }) {
+  useEffect(() => {
+    const key = (e) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', key)
+    return () => window.removeEventListener('keydown', key)
+  }, [onClose])
+  return (
+    <div className="lb ct" role="dialog" aria-modal="true" aria-label="Link not available" onClick={onClose}>
+      <div className="ct-card" onClick={(e) => e.stopPropagation()}>
+        <button className="ct-x" aria-label="Close" onClick={onClose}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
+        </button>
+        <h2>No link yet</h2>
+        <p>The link for {name} is not attached yet. Please check back soon.</p>
+      </div>
+    </div>
+  )
+}
+
+function Particles() {
+  const ref = useRef(null)
+  useEffect(() => {
+    const cv = ref.current
+    const ctx = cv.getContext('2d')
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const D = 140
+    let w = 0, h = 0, pts = [], raf = 0, last = 0
+
+    const size = () => {
+      const r = cv.getBoundingClientRect()
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      w = cv.clientWidth; h = cv.clientHeight
+      cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr)
+      ctx.setTransform(cv.width / w, 0, 0, cv.height / h, 0, 0)
+      const n = Math.max(40, Math.min(110, Math.round((w * h) / 9000)))
+      pts = Array.from({ length: n }, () => ({
+        x: Math.random() * w, y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+      }))
+      draw()
+    }
+
+    const draw = () => {
+      const c = document.documentElement.dataset.theme === 'dark' ? '232,228,216' : '0,0,0'
+      ctx.clearRect(0, 0, w, h)
+      ctx.lineWidth = 1
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i]
+        ctx.fillStyle = `rgba(${c},.7)`
+        ctx.fillRect(Math.round(a.x) - 1.5, Math.round(a.y) - 1.5, 3, 3)
+        for (let j = i + 1; j < pts.length; j++) {
+          const b = pts[j]
+          const dx = a.x - b.x, dy = a.y - b.y
+          const d2 = dx * dx + dy * dy
+          if (d2 < D * D) {
+            ctx.strokeStyle = `rgba(${c},${(1 - Math.sqrt(d2) / D) * 0.35})`
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke()
+          }
+        }
+      }
+    }
+
+    const tick = (t) => {
+      raf = requestAnimationFrame(tick)
+      if (t - last < 33) return
+      last = t
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy
+        if (p.x < 0 || p.x > w) p.vx *= -1
+        if (p.y < 0 || p.y > h) p.vy *= -1
+      }
+      draw()
+    }
+
+    const vis = () => {
+      cancelAnimationFrame(raf)
+      if (!document.hidden && !still) raf = requestAnimationFrame(tick)
+    }
+
+    size()
+    vis()
+    window.addEventListener('resize', size)
+    document.addEventListener('visibilitychange', vis)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', size)
+      document.removeEventListener('visibilitychange', vis)
+    }
+  }, [])
+  return <canvas className="bg" ref={ref} aria-hidden="true" />
+}
+
 function Layout({ children }) {
   const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const [dark, setDark] = useState(() => document.documentElement.dataset.theme === 'dark')
   const bar = useRef(null)
   const [contact, setContact] = useState(false)
+  const [note, setNote] = useState(null)
 
   useEffect(() => {
     const open = () => setContact(true)
@@ -106,12 +199,14 @@ function Layout({ children }) {
 
   return (
     <>
+      <Particles />
       <div className="prog" ref={bar} />
       <header>
         <div className="wrap bar">
           <Link to="/" className="brand">{profile.name}</Link>
           <nav className={open ? 'open' : ''}>
-            {categories.map((c) => <NavLink key={c.slug} to={`/${c.slug}`}>{c.title}</NavLink>)}
+          {categories.map((c) => <NavLink key={c.slug} to={`/${c.slug}`}>{c.title}</NavLink>)}
+          <NavLink to="/about">About</NavLink>
           </nav>
           <div className="tools">
             <button className="mode" aria-pressed={dark} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} onClick={() => setDark(!dark)}><Bulb on={!dark} />{dark ? 'Light' : 'Dark'}</button>
@@ -124,6 +219,7 @@ function Layout({ children }) {
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
       </button>
       {contact && <Contact onClose={() => setContact(false)} />}
+      {note && <Notice name={note} onClose={() => setNote(null)} />}
       <footer>
         <div className="wrap foot">
           <div>
@@ -131,6 +227,18 @@ function Layout({ children }) {
             <a className="mail" href={`mailto:${profile.email}`}>{profile.email}</a>
           </div>
           <Socials />
+        </div>
+        <div className="wrap part">
+          <h3>Partners</h3>
+          <ul>
+            {partners.map((x) => (
+              <li key={x.n}>
+              {x.u
+                ? <a href={x.u} target="_blank" rel="noreferrer"><b>{x.n} ↗</b><span>{x.r}</span></a>
+                : <button onClick={() => setNote(x.n)}><b>{x.n}</b><span>{x.r}</span></button>}
+            </li>
+            ))}
+          </ul>
         </div>
         <p className="wrap copy">© {new Date().getFullYear()} {profile.name}</p>
       </footer>
@@ -146,6 +254,33 @@ const COVER = {
   'ai-development': 'ai-1',
 }
 
+function Offers() {
+  const line = packages.map((x) => `${x.n} ${x.p}`).join('  ✦  ') + '  ✦  '
+  return (
+    <section className="wrap offers" aria-label="Packages">
+      <div className="tick" aria-hidden="true">
+        <div><span>{line}</span><span>{line}</span></div>
+      </div>
+      <div className="oh">
+        <h2>Project packages</h2>
+        <p>1 year free support, updates and a security check-up included.</p>
+      </div>
+      <ul className="ol">
+        {packages.map((x, i) => (
+          <li key={x.n}>
+            <button onClick={() => window.dispatchEvent(new Event('open-contact'))}>
+              <i>{String(i + 1).padStart(2, '0')}</i>
+              <div><h3>{x.n}</h3><span>{x.t}</span></div>
+              <b>{x.p}</b>
+              <em aria-hidden="true">↗</em>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 function Home() {
   return (
     <>
@@ -153,14 +288,18 @@ function Home() {
         <div>
           <h1><span className="ln"><span>{profile.name},</span></span><span className="ln"><span>{profile.role}</span></span></h1>
           <p>{profile.intro}</p>
-          <Socials />
+          <div className="acts">
+            <Socials />
+            <Link to="/about" className="visit moreinfo">More info ↗</Link>
+          </div>
         </div>
         <figure className="me">
           <div className="me-pane" aria-hidden="true" />
           <img src={asset('assets/images/vince-cutout.png')} alt={`Portrait of ${profile.name}`} decoding="async" />
           <figcaption><i aria-hidden="true" />Open for projects</figcaption>
         </figure>
-      </section>
+        </section>
+        <Offers />
       <section className="wrap">
         <div className="grid">
           {categories.map((c) => (
@@ -176,6 +315,63 @@ function Home() {
             <div className="meta big"><div><h3>Let’s work together</h3><span>Send a message</span></div><i className="arr" aria-hidden="true">↗</i></div>
           </button>
         </div>
+      </section>
+    </>
+  )
+}
+
+function Chapter({ c, i }) {
+  const ref = useRef(null)
+  const [show, setShow] = useState(i === 0)
+  useEffect(() => {
+    if (show) return
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setShow(true); io.disconnect() }
+    }, { rootMargin: '0px 0px -25% 0px' })
+    io.observe(ref.current)
+    return () => io.disconnect()
+  }, [show])
+  return (
+    <article ref={ref} className={show ? 'ch in' : 'ch'}>
+      <div className="ch-n"><span>Chapter</span><b>{String(i + 1).padStart(2, '0')}</b></div>
+      <div className="ch-b">
+        <h3>{c.t}</h3>
+        {c.p.map((t) => <p key={t}>{t}</p>)}
+      </div>
+    </article>
+  )
+}
+
+function About() {
+  const skills = ['Web development', 'Application development', 'Video editing', 'Photo editing', 'Web design', 'Penetration Testing (Foundational Knowledge)']
+  return (
+    <>
+      <section className="wrap chead">
+        <Link to="/" className="back">← Home</Link>
+        <h1>About</h1>
+        <p>{about.lead}</p>
+      </section>
+      <section className="wrap info abt">
+        <div>
+          <figure className="abt-fig">
+            <div className="abt-frame">
+              <img src={asset('assets/images/about.jpg')} alt={`Photo of ${profile.name}`} decoding="async" />
+            </div>
+            <span className="abt-tag"><i aria-hidden="true" />Behind the lens</span>
+            <span className="abt-stk" aria-hidden="true">Web · Video · AI</span>
+          </figure>
+        </div>
+        <div>
+        <h2>Skills</h2> 
+          <ul className="chips">{skills.map((s) => <li key={s}>{s}</li>)}</ul>
+        </div>
+      </section>
+      <section className="wrap chap">
+        <h2 className="sec">{about.title}</h2>
+        {about.chapters.map((c, i) => <Chapter key={c.t} c={c} i={i} />)}
+      </section>
+      <section className="wrap abt-cta">
+        <button className="visit" onClick={() => window.dispatchEvent(new Event('open-contact'))}>Let’s work together ↗</button>
       </section>
     </>
   )
@@ -287,7 +483,8 @@ export default function App() {
     <HashRouter>
       <Layout>
         <Routes>
-          <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
           <Route path="/:slug" element={<Category />} />
         </Routes>
       </Layout>
