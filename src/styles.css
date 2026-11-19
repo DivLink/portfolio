@@ -293,6 +293,20 @@ header nav a.active{background:var(--fg);color:var(--bg)}
 .ch-b p{max-width:680px;margin-bottom:16px;opacity:.85}
 @media(max-width:760px){.ch{grid-template-columns:1fr}.ch-n{position:static}}
 
+.rm-btn{font-weight:700;border-bottom:2px solid var(--fg);line-height:1.2}
+.rm-btn:hover,.rm-btn:focus-visible{background:var(--fg);color:var(--bg)}
+.rm-card h2{font-size:clamp(26px,4vw,38px);line-height:1}
+.rm-card p{max-width:none;opacity:.85;margin-top:8px}
+
+/* versions */
+.vers{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.vers button{display:flex;flex-direction:column;align-items:flex-start;padding:6px 14px;border:2px solid var(--fg);font-weight:700;line-height:1.2;transition:background .2s,color .2s}
+.vers button small{font-size:12px;font-weight:500;opacity:.7}
+.vers button:hover,.vers button.on{background:var(--fg);color:var(--bg)}
+.vtag{display:inline-block;vertical-align:middle;margin-left:12px;padding:4px 10px;border:2px solid var(--fg);font:700 13px/1 'DM Sans',sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.card.side .vers{grid-column:2}
+.card.side .pics{grid-row:1/6}
+
 @media(min-width:1800px){body{zoom:1.25}}
 @media(min-width:2400px){body{zoom:1.6}}
 @media(min-width:3200px){body{zoom:2.1}}

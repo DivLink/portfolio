@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { HashRouter, Routes, Route, Link, NavLink, Navigate, useLocation, useParams } from 'react-router-dom'
 import { profile, categories, packages, partners, about, asset } from './data'
+import ReadMore from './ReadMore'
 
 function Bulb({ on }) {
   return (
@@ -412,6 +413,7 @@ function Lightbox({ box, setBox }) {
 function Category() {
   const { slug } = useParams()
   const [box, setBox] = useState(null)
+  const [ver, setVer] = useState({})
   const i = categories.findIndex((c) => c.slug === slug)
   if (i < 0) return <Navigate to="/" replace />
   const c = categories[i]
@@ -432,7 +434,9 @@ function Category() {
       <section className="wrap">
         <h2 className="sec">Selected work</h2>
         <div className="work">
-          {c.projects.map((p) => {
+          {c.projects.map((proj) => {
+            const vi = ver[proj.t] ?? (proj.versions ? proj.versions.length - 1 : 0)
+            const p = { ...proj, ...(proj.versions ? proj.versions[vi] : {}) }
             const list = p.video ? [p.video] : [p.img, ...p.more]
             return (
               <article key={p.t} className={phone ? 'card side' : 'card'}>
@@ -461,8 +465,17 @@ function Category() {
                     )}
                   </div>
                 )}
-                <div className="cap"><h3>{p.t}</h3>{p.y && <span>{p.y}</span>}</div>
-                <p>{p.d}</p>
+                {proj.versions && (
+                  <div className="vers" role="tablist" aria-label={`${p.t} versions`}>
+                    {proj.versions.map((v, k) => (
+                      <button key={k} role="tab" aria-selected={k === vi} className={k === vi ? 'on' : ''} onClick={() => setVer({ ...ver, [proj.t]: k })}>
+                        {v.tag}<small>{v.y}</small>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="cap"><h3>{p.t}{p.tag && <em className="vtag">{p.tag}</em>}</h3>{p.y && <span>{p.y}</span>}</div>
+                <p><ReadMore text={p.d} title={p.t} /></p>
                 {p.url && <a className="visit" href={p.url} target="_blank" rel="noreferrer">Visit website ↗</a>}
               </article>
             )

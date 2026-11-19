@@ -16,11 +16,14 @@ export const profile = {
   links: [['Facebook', 'https://www.facebook.com/vince.nicole.tecson.2025'], ['Instagram', 'https://www.instagram.com/_vnc319/'], ['Tiktok', 'https://www.tiktok.com/@vincecli0319'], ['LinkedIn', 'https://www.linkedin.com/in/vince-nicole-tecson-b1aa51364/']],
 }
 
-// [title, description, optional image path or list of image paths]
 const P = (slug, list) =>
-  list.map(([t, d, img, yr, url], i) => {
-    const imgs = [].concat(img || `assets/images/${slug}-${i + 1}.svg`)
-    return { t, d, y: yr || 2026 - i, url, img: imgs[0], more: imgs.slice(1) }
+  list.map(([t, d, img, yr, url, tag, vers = []], i) => {
+    const one = (tag, d, img, yr, url) => {
+      const imgs = [].concat(img || `assets/images/${slug}-${i + 1}.svg`)
+      return { tag, d, y: yr || 2026 - i, url, img: imgs[0], more: imgs.slice(1) }
+    }
+    const all = [one(tag, d, img, yr, url), ...vers.map((v) => one(...v))]
+    return { t, ...all[0], versions: all.length > 1 ? all : null }
   })
 
 const VIDEOS = [
@@ -48,6 +51,7 @@ const MOBILE = ['dashboard', 'movies', 'display', 'trailer', 'tvshow', 'continue
 const HERMES = ['hermes', 'hermes-coding', 'hermes-nmap'].map((n) => `assets/images/${n}.png`)
 const VE = ['ve-logo', 've-processing', 've-webchecking', 've-terminal-image-resolt', 've-fulldetailedresult'].map((n) => `assets/images/${n}.png`)
 const UN0 = ['dashboard', 'hover', 'info', 'movie', 'tvshow', 'trailer', 'play', 'continue', 'channel1', 'profile', 'browse', 'login'].map((n) => `assets/images/dsk-${n}.png`)
+const JARVIS = ['Jrv_standardPose', 'Jrv_onReponse', 'Jrv_splashScreen'].map((n) => `assets/images/${n}.png`)
 const ZDE = ['zde-home', 'zde-product'].map((n) => `assets/images/${n}.png`)
 const PIIXEL = ['dashboard', 'book', 'payment', 'booking', 'news'].map((n) => `assets/images/piixel-${n}.png`)
 const JING = ['pic1-C3JwqGto', ...Array.from({ length: 11 }, (_, i) => `pic${i + 2}`)].map((n) => `assets/images/${n}.png`)
@@ -96,10 +100,13 @@ export const categories = [
     slug: 'ai-development', title: 'AI development',
     blurb: 'Practical AI features: chat, search and automation that save time.',
     tools: ['Hermes Agent', 'Gemini 3.5', 'Groq', 'Python', 'JavaScript'],
-    services: ['Voice assistants and chat', 'Smart search and recommendations', 'Workflow automation', 'AI inside existing apps'],
+    services: ['Voice assistants and chat', 'Smart search and recommendations', 'Workflow automation', 'System assistants and voice authentication', 'AI inside existing apps'],
     projects: P('ai', [
-      ['Veronica (Hermes Agent)', 'A fully functional AI assistant running inside Hermes Agent, powered by two reasoning engines: Gemini 3.5 and Groq. She follows a script injected into the agent that defines her response behavior and character. She supports voice commands, voice responses and coding assistance.', HERMES, 2026],
-      ['Veronica Synthesis 1.1 - Independent AI Agent', 'A standalone local AI agent, separate from the Hermes Agent version of Veronica, designed to operate in fully independent mode. It supports multiple AI models, allowing it to perform a range of tasks based on the capabilities of its installed models. The system supports offline image generation, including the creation of highly realistic images, without requiring an active internet connection. When online access is necessary, Veronica can request permission to switch to online mode and access additional capabilities. It is also portable: it runs on both mobile phones and MacBooks, and can be installed on a flash drive or saved directly on a computer, so it can be carried and used anywhere. With integrated reasoning, flexible model support, and offline functionality, Veronica Synthesis 1.1 represents a significant step forward in the development of an independent AI agent.', VE, 2026],
+      ['Veronica (Hermes Agent)', 'A fully functional AI assistant running inside Hermes Agent, powered by two reasoning engines: Gemini 3.5 and Groq. She follows a script injected into the agent that defines her response behavior and character. She supports voice commands, voice responses and coding assistance.', HERMES, 2025],
+      ['Veronica Synthesis 1.1 - Independent AI Agent', 'A standalone local AI agent, separate from the Hermes Agent version of Veronica, designed to operate in fully independent mode. It supports multiple AI models, allowing it to perform a range of tasks based on the capabilities of its installed models. The system supports offline image generation, including the creation of highly realistic images, without requiring an active internet connection. When online access is necessary, Veronica can request permission to switch to online mode and access additional capabilities. It is also portable: it runs on both mobile phones and MacBooks, and can be installed on a flash drive or saved directly on a computer, so it can be carried and used anywhere. With integrated reasoning, flexible model support, and offline functionality, Veronica Synthesis 1.1 represents a significant step forward in the development of an independent AI agent.',  VE, 2025],
+      ['JARVIS - Background AI System Assistant', 'A standalone AI system assistant, separate from Veronica, that runs as a background program across the entire computer system. It stays active at all times and operates directly on the machine. It manages emails, tracks social media updates, handles file creation and organization, executes authorized files and commands, and monitors system information and processes. It includes an Owner Recognition System with voice recognition, owner profile, permission levels and command authentication, so it responds only to its registered owner. JARVIS acts as an intelligent layer between the owner and the computer, controlled by natural voice and text commands.', JARVIS, 2026, undefined, 'v1.0', [
+        ['v2.0', 'What is new in this version.', JARVIS2, 2027],
+      ]],
     ]),
   },
 ]
